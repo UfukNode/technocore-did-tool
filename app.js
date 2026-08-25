@@ -14,6 +14,8 @@ const i18n = {
     baseUrl: "Technocore URL",
     createDid: "Create DID and proof kit",
     downloadKey: "Download private key",
+    existingKey: "Existing private key JSON",
+    useSavedDid: "Use saved DID",
     identityTitle: "Identity",
     identityText: "Your DID and public profile note.",
     fingerprint: "Fingerprint",
@@ -33,6 +35,8 @@ const i18n = {
     open: "Open",
     copied: "Copied.",
     created: "DID and proof kit created.",
+    reused: "Saved DID loaded and proof kit created.",
+    selectKey: "Select a private key JSON first.",
     lobbyStep: "Step 2: join Technocore",
     lobbyHelp: "Post a signed proof in /r/lobby. This proves the DID can sign.",
     profileStep: "Step 3: publish DID profile",
@@ -57,6 +61,8 @@ const i18n = {
     baseUrl: "Technocore URL",
     createDid: "DID ve proof kit oluştur",
     downloadKey: "Private key indir",
+    existingKey: "Mevcut private key JSON",
+    useSavedDid: "Kayıtlı DID'i kullan",
     identityTitle: "Kimlik",
     identityText: "DID ve public profile note bilgilerin.",
     fingerprint: "Fingerprint",
@@ -76,6 +82,8 @@ const i18n = {
     open: "Aç",
     copied: "Kopyalandı.",
     created: "DID ve proof kit oluşturuldu.",
+    reused: "Kayıtlı DID yüklendi ve proof kit oluşturuldu.",
+    selectKey: "Önce private key JSON dosyasını seç.",
     lobbyStep: "Adım 2: Technocore'a katıl",
     lobbyHelp: "/r/lobby içine signed proof gönder. Bu DID'in imza atabildiğini gösterir.",
     profileStep: "Adım 3: DID profilini yayınla",
@@ -100,6 +108,8 @@ const $ = (selector) => document.querySelector(selector);
 
 const elements = {
   createButton: $("#createButton"),
+  importKeyButton: $("#importKeyButton"),
+  privateKeyFile: $("#privateKeyFile"),
   downloadKeyButton: $("#downloadKeyButton"),
   copyShareButton: $("#copyShareButton"),
   copyExportButton: $("#copyExportButton"),
@@ -150,16 +160,7 @@ async function createKit() {
   setBusy(true);
   try {
     const identity = await postJson("/api/create-did");
-    state.key = identity.privateKeyJwk;
-    state.kit = await postJson("/api/build-kit", {
-      privateKeyJwk: state.key,
-      agentName: inputValue("agentName"),
-      xHandle: inputValue("xHandle"),
-      contributionType: inputValue("contributionType"),
-      guideUrl: inputValue("guideUrl"),
-      contributionSummary: inputValue("contributionSummary"),
-      baseUrl: inputValue("baseUrl"),
-    });
+    await buildKitWithKey(identity.privateKeyJwk);
     renderKit();
     showToast(t("created"));
   } catch (error) {
@@ -169,8 +170,48 @@ async function createKit() {
   }
 }
 
+async function buildKitWithKey(privateKeyJwk) {
+  state.key = privateKeyJwk;
+  state.kit = await postJson("/api/build-kit", {
+    privateKeyJwk: state.key,
+    agentName: inputValue("agentName"),
+    xHandle: inputValue("xHandle"),
+    contributionType: inputValue("contributionType"),
+    guideUrl: inputValue("guideUrl"),
+    contributionSummary: inputValue("contributionSummary"),
+    baseUrl: inputValue("baseUrl"),
+  });
+}
+
+function privateKeyFromJson(payload) {
+  if (payload && payload.privateKeyJwk) return payload.privateKeyJwk;
+  if (payload && payload.kty === "OKP" && payload.crv === "Ed25519") return payload;
+  throw new Error("Select the private key JSON downloaded from this tool.");
+}
+
+async function importSavedDid() {
+  const file = elements.privateKeyFile.files && elements.privateKeyFile.files[0];
+  if (!file) {
+    showToast(t("selectKey"));
+    return;
+  }
+
+  setBusy(true);
+  try {
+    const payload = JSON.parse(await file.text());
+    await buildKitWithKey(privateKeyFromJson(payload));
+    renderKit();
+    showToast(t("reused"));
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    setBusy(false);
+  }
+}
+
 function setBusy(isBusy) {
   elements.createButton.disabled = isBusy;
+  elements.importKeyButton.disabled = isBusy;
 }
 
 function urlRows() {
@@ -259,6 +300,7 @@ function showToast(message) {
 }
 
 elements.createButton.addEventListener("click", createKit);
+elements.importKeyButton.addEventListener("click", importSavedDid);
 elements.downloadKeyButton.addEventListener("click", () => {
   if (!state.key || !state.kit) return;
   download(

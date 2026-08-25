@@ -133,6 +133,18 @@ Download private key
 
 Keep this file private. It lets you sign again with the same DID later.
 
+## Reuse The Same DID
+
+If you already created a DID before, do not create a new one again.
+
+Use your saved private key file:
+
+1. Fill in the contribution fields.
+2. Select your old private key JSON under `Existing private key JSON`.
+3. Click `Use saved DID`.
+
+The tool will rebuild the proof kit with the same DID and fingerprint.
+
 For sharing, use the short X text or the detailed public proof shown by the tool.
 
 The public proof includes:

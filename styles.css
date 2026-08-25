@@ -182,6 +182,16 @@ textarea:focus {
   margin-top: 14px;
 }
 
+.reuse {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
 button,
 .button {
   display: inline-flex;
@@ -332,6 +342,7 @@ code {
   .topbar,
   .layout,
   .grid,
+  .reuse,
   .url-row {
     grid-template-columns: 1fr;
   }
