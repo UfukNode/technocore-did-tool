@@ -152,6 +152,8 @@ Use your saved private key file:
 2. Select your old private key JSON under `Existing private key JSON`.
 3. Click `Use saved DID`.
 
+![Existing DID flow](assets/existing-did-flow.png)
+
 The tool will rebuild the proof kit with the same DID and fingerprint.
 Do not upload or share this private key anywhere public.
 
