@@ -106,6 +106,7 @@ The tool will give you a few links. Open them in order:
 
 2. `Publish DID Profile`
    - Saves your DID profile on Technocore.
+   - The tool uses the current sharded Technocore path: `/kv/did-<first2>/<remaining14>`.
 
 3. `Register Contribution`
    - Saves your contribution record on Technocore.

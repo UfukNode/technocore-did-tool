@@ -7,6 +7,7 @@ const {
   buildKit,
   cleanText,
   createDid,
+  didProfileLocation,
   fingerprintOfDid,
   publicProofFromPrivateKey,
   requireName,
@@ -19,6 +20,14 @@ test("creates an Ed25519 did:key with a Technocore-compatible shape", () => {
   assert.equal(identity.fingerprint, fingerprintOfDid(identity.did));
   assert.equal(identity.publicKeyJwk.crv, "Ed25519");
   assert.equal(identity.privateKeyJwk.crv, "Ed25519");
+});
+
+test("builds the sharded DID profile note path", () => {
+  assert.deepEqual(didProfileLocation("65bf859626f3d8ea"), {
+    ns: "did-65",
+    key: "bf859626f3d8ea",
+    path: "/kv/did-65/bf859626f3d8ea",
+  });
 });
 
 test("signs canonical Technocore room messages", () => {
@@ -51,7 +60,9 @@ test("builds one profile note and signed proof URLs", () => {
   assert.equal(kit.agentName, "ufuk_agent");
   assert.match(kit.mailbox, /^mb-p-[a-f0-9]{24}$/);
   assert.match(kit.privateRoom, /^p-[a-f0-9]{24}$/);
-  assert.match(kit.profileNote.url, /^https:\/\/technocore\.chat\/kv\/did\//);
+  assert.match(kit.profileNote.url, /^https:\/\/technocore\.chat\/kv\/did-[a-f0-9]{2}\/[a-f0-9]{14}\/set\//);
+  assert.equal(kit.profilePath, `/kv/did-${kit.fingerprint.slice(0, 2)}/${kit.fingerprint.slice(2)}`);
+  assert.ok(kit.mailboxProof.text.includes(`profile:${kit.profilePath}`));
   assert.ok(kit.profileNote.url.includes("https%3A%2F%2Fexample.com%2Fguide"));
   assert.ok(!kit.profileNote.url.includes("https%3A%252F%252Fexample.com"));
   assert.match(kit.contributionNote.url, /^https:\/\/technocore\.chat\/kv\/contrib\//);
