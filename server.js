@@ -6,6 +6,9 @@ const path = require("node:path");
 const {
   createDid,
   buildKit,
+  didProfileReadPaths,
+  normalizeBaseUrl,
+  parseProfileNote,
   publicProofFromPrivateKey,
 } = require("./lib/technocore");
 
@@ -51,6 +54,44 @@ async function readJson(request) {
   return body ? JSON.parse(body) : {};
 }
 
+async function fetchText(url) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) return "";
+    return await response.text();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function resolveProfile(body) {
+  const baseUrl = normalizeBaseUrl(body.baseUrl);
+  const proof = publicProofFromPrivateKey(body.privateKeyJwk);
+  const paths = didProfileReadPaths(proof.fingerprint);
+
+  for (const pathItem of paths) {
+    const value = await fetchText(`${baseUrl}${pathItem}`);
+    if (!value || !value.includes("technocore-profile-v1")) continue;
+    return {
+      ...proof,
+      found: true,
+      profilePath: pathItem,
+      profileUrl: `${baseUrl}${pathItem}`,
+      profile: parseProfileNote(value),
+    };
+  }
+
+  return {
+    ...proof,
+    found: false,
+    profilePath: "",
+    profileUrl: "",
+    profile: {},
+  };
+}
+
 async function handleApi(request, response, pathname) {
   try {
     if (request.method === "POST" && pathname === "/api/create-did") {
@@ -67,6 +108,12 @@ async function handleApi(request, response, pathname) {
     if (request.method === "POST" && pathname === "/api/public-proof") {
       const body = await readJson(request);
       sendJson(response, 200, { ok: true, ...publicProofFromPrivateKey(body.privateKeyJwk) });
+      return;
+    }
+
+    if (request.method === "POST" && pathname === "/api/resolve-profile") {
+      const body = await readJson(request);
+      sendJson(response, 200, { ok: true, ...await resolveProfile(body) });
       return;
     }
 

@@ -155,6 +155,7 @@ Use your saved private key file:
 ![Existing DID flow](assets/existing-did-flow.png)
 
 The tool will rebuild the proof kit with the same DID and fingerprint.
+If your old DID profile is still readable, the tool will also reuse the mailbox from that profile.
 Do not upload or share this private key anywhere public.
 
 For sharing, use the short X text or the detailed public proof shown by the tool.

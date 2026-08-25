@@ -8,7 +8,9 @@ const {
   cleanText,
   createDid,
   didProfileLocation,
+  didProfileReadPaths,
   fingerprintOfDid,
+  parseProfileNote,
   publicProofFromPrivateKey,
   requireName,
   sign,
@@ -28,6 +30,21 @@ test("builds the sharded DID profile note path", () => {
     key: "bf859626f3d8ea",
     path: "/kv/did-65/bf859626f3d8ea",
   });
+  assert.deepEqual(didProfileReadPaths("65bf859626f3d8ea"), [
+    "/kv/did-65/bf859626f3d8ea",
+    "/kv/did/65bf859626f3d8ea",
+  ]);
+});
+
+test("parses mailbox details from a DID profile note", () => {
+  const profile = parseProfileNote(
+    "technocore-profile-v1 did:did:key:z6Mkxxx agent:ufuk_agent mailbox:mb-p-e260047ca74509d02e9bca85 contribution:/kv/contrib/65bf859626f3d8ea x:@ufukdegen guide:https://example.com/tool",
+  );
+
+  assert.equal(profile.agentName, "ufuk_agent");
+  assert.equal(profile.mailbox, "mb-p-e260047ca74509d02e9bca85");
+  assert.equal(profile.xHandle, "ufukdegen");
+  assert.equal(profile.guideUrl, "https://example.com/tool");
 });
 
 test("signs canonical Technocore room messages", () => {

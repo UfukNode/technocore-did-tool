@@ -36,6 +36,7 @@ const i18n = {
     copied: "Copied.",
     created: "DID and proof kit created.",
     reused: "Saved DID loaded and proof kit created.",
+    reusedMailbox: "Saved DID loaded. Existing mailbox reused.",
     selectKey: "Select a private key JSON first.",
     lobbyStep: "Step 2: join Technocore",
     lobbyHelp: "Post a signed proof in /r/lobby. This proves the DID can sign.",
@@ -83,6 +84,7 @@ const i18n = {
     copied: "Kopyalandı.",
     created: "DID ve proof kit oluşturuldu.",
     reused: "Kayıtlı DID yüklendi ve proof kit oluşturuldu.",
+    reusedMailbox: "Kayıtlı DID yüklendi. Mevcut mailbox kullanıldı.",
     selectKey: "Önce private key JSON dosyasını seç.",
     lobbyStep: "Adım 2: Technocore'a katıl",
     lobbyHelp: "/r/lobby içine signed proof gönder. Bu DID'in imza atabildiğini gösterir.",
@@ -170,16 +172,17 @@ async function createKit() {
   }
 }
 
-async function buildKitWithKey(privateKeyJwk) {
+async function buildKitWithKey(privateKeyJwk, savedProfile = {}) {
   state.key = privateKeyJwk;
   state.kit = await postJson("/api/build-kit", {
     privateKeyJwk: state.key,
-    agentName: inputValue("agentName"),
-    xHandle: inputValue("xHandle"),
+    agentName: inputValue("agentName") || savedProfile.agentName || "",
+    xHandle: inputValue("xHandle") || savedProfile.xHandle || "",
     contributionType: inputValue("contributionType"),
-    guideUrl: inputValue("guideUrl"),
+    guideUrl: inputValue("guideUrl") || savedProfile.guideUrl || "",
     contributionSummary: inputValue("contributionSummary"),
     baseUrl: inputValue("baseUrl"),
+    mailbox: savedProfile.mailbox || "",
   });
 }
 
@@ -199,9 +202,20 @@ async function importSavedDid() {
   setBusy(true);
   try {
     const payload = JSON.parse(await file.text());
-    await buildKitWithKey(privateKeyFromJson(payload));
+    const privateKeyJwk = privateKeyFromJson(payload);
+    let savedProfile = {};
+    try {
+      const resolved = await postJson("/api/resolve-profile", {
+        privateKeyJwk,
+        baseUrl: inputValue("baseUrl"),
+      });
+      savedProfile = resolved.profile || {};
+    } catch {
+      savedProfile = {};
+    }
+    await buildKitWithKey(privateKeyJwk, savedProfile);
     renderKit();
-    showToast(t("reused"));
+    showToast(savedProfile.mailbox ? t("reusedMailbox") : t("reused"));
   } catch (error) {
     showToast(error.message);
   } finally {
