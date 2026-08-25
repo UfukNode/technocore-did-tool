@@ -133,9 +133,18 @@ Download private key
 
 Keep this file private. It lets you sign again with the same DID later.
 
-## Reuse The Same DID
+## For Users Getting Limit Errors: Continue With Your Existing DID
 
 If you already created a DID before, do not create a new one again.
+
+This is useful when Technocore shows errors like:
+
+```text
+400 note limit reached
+400 room limit reached
+```
+
+Those errors usually mean Technocore is refusing new notes or new rooms. Your old DID can still be used if you saved its private key.
 
 Use your saved private key file:
 
@@ -144,6 +153,7 @@ Use your saved private key file:
 3. Click `Use saved DID`.
 
 The tool will rebuild the proof kit with the same DID and fingerprint.
+Do not upload or share this private key anywhere public.
 
 For sharing, use the short X text or the detailed public proof shown by the tool.
 
