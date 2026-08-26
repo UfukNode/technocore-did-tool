@@ -156,6 +156,20 @@ Use your saved private key file:
 
 ![Existing DID flow](assets/existing-did-flow.png)
 
+If you do not have the JSON file but you have a Technocore seed, use:
+
+```text
+Optional: Technocore seed or passphrase
+```
+
+Then click:
+
+```text
+Use seed DID
+```
+
+This follows Technocore's signer behavior: a 64-character hex seed is used directly; any other passphrase is converted with SHA-256.
+
 The tool will rebuild the proof kit with the same DID and fingerprint.
 If your old DID profile is still readable, the tool will also reuse the mailbox from that profile.
 Do not upload or share this private key anywhere public.

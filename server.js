@@ -9,6 +9,7 @@ const {
   didProfileReadPaths,
   normalizeBaseUrl,
   parseProfileNote,
+  privateKeyJwkFromSeed,
   publicProofFromPrivateKey,
 } = require("./lib/technocore");
 
@@ -96,6 +97,14 @@ async function handleApi(request, response, pathname) {
   try {
     if (request.method === "POST" && pathname === "/api/create-did") {
       sendJson(response, 200, { ok: true, ...createDid() });
+      return;
+    }
+
+    if (request.method === "POST" && pathname === "/api/key-from-seed") {
+      const body = await readJson(request);
+      const privateKeyJwk = privateKeyJwkFromSeed(body.seed);
+      const proof = publicProofFromPrivateKey(privateKeyJwk);
+      sendJson(response, 200, { ok: true, privateKeyJwk, ...proof });
       return;
     }
 

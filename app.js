@@ -16,6 +16,8 @@ const i18n = {
     downloadKey: "Download private key",
     existingKey: "Optional: existing private key JSON",
     useSavedDid: "Use saved DID",
+    seedInput: "Optional: Technocore seed or passphrase",
+    useSeedDid: "Use seed DID",
     identityTitle: "Identity",
     identityText: "Your DID and public profile note.",
     fingerprint: "Fingerprint",
@@ -38,6 +40,8 @@ const i18n = {
     reused: "Saved DID loaded and proof kit created.",
     reusedMailbox: "Saved DID loaded. Existing mailbox reused.",
     selectKey: "Select a private key JSON first.",
+    selectSeed: "Enter a Technocore seed or passphrase first.",
+    seedLoaded: "Seed DID loaded and proof kit created.",
     lobbyStep: "Step 2: join Technocore",
     lobbyHelp: "Post a signed proof in /r/lobby. This proves the DID can sign.",
     profileStep: "Step 3: publish DID profile",
@@ -64,6 +68,8 @@ const i18n = {
     downloadKey: "Private key indir",
     existingKey: "Opsiyonel: mevcut private key JSON",
     useSavedDid: "Kayıtlı DID'i kullan",
+    seedInput: "Opsiyonel: Technocore seed veya passphrase",
+    useSeedDid: "Seed DID'i kullan",
     identityTitle: "Kimlik",
     identityText: "DID ve public profile note bilgilerin.",
     fingerprint: "Fingerprint",
@@ -86,6 +92,8 @@ const i18n = {
     reused: "Kayıtlı DID yüklendi ve proof kit oluşturuldu.",
     reusedMailbox: "Kayıtlı DID yüklendi. Mevcut mailbox kullanıldı.",
     selectKey: "Önce private key JSON dosyasını seç.",
+    selectSeed: "Önce Technocore seed veya passphrase gir.",
+    seedLoaded: "Seed DID yüklendi ve proof kit oluşturuldu.",
     lobbyStep: "Adım 2: Technocore'a katıl",
     lobbyHelp: "/r/lobby içine signed proof gönder. Bu DID'in imza atabildiğini gösterir.",
     profileStep: "Adım 3: DID profilini yayınla",
@@ -111,6 +119,7 @@ const $ = (selector) => document.querySelector(selector);
 const elements = {
   createButton: $("#createButton"),
   importKeyButton: $("#importKeyButton"),
+  importSeedButton: $("#importSeedButton"),
   privateKeyFile: $("#privateKeyFile"),
   downloadKeyButton: $("#downloadKeyButton"),
   copyShareButton: $("#copyShareButton"),
@@ -201,6 +210,18 @@ function privateKeyFromJson(payload) {
   throw new Error("Select the private key JSON downloaded from this tool.");
 }
 
+async function savedProfileForKey(privateKeyJwk) {
+  try {
+    const resolved = await postJson("/api/resolve-profile", {
+      privateKeyJwk,
+      baseUrl: inputValue("baseUrl"),
+    });
+    return resolved.profile || {};
+  } catch {
+    return {};
+  }
+}
+
 async function importSavedDid() {
   const file = elements.privateKeyFile.files && elements.privateKeyFile.files[0];
   if (!file) {
@@ -212,16 +233,7 @@ async function importSavedDid() {
   try {
     const payload = JSON.parse(await file.text());
     const privateKeyJwk = privateKeyFromJson(payload);
-    let savedProfile = {};
-    try {
-      const resolved = await postJson("/api/resolve-profile", {
-        privateKeyJwk,
-        baseUrl: inputValue("baseUrl"),
-      });
-      savedProfile = resolved.profile || {};
-    } catch {
-      savedProfile = {};
-    }
+    const savedProfile = await savedProfileForKey(privateKeyJwk);
     await buildKitWithKey(privateKeyJwk, savedProfile);
     renderKit();
     showToast(savedProfile.mailbox ? t("reusedMailbox") : t("reused"));
@@ -232,9 +244,31 @@ async function importSavedDid() {
   }
 }
 
+async function importSeedDid() {
+  const seed = inputValue("seedInput");
+  if (!seed) {
+    showToast(t("selectSeed"));
+    return;
+  }
+
+  setBusy(true);
+  try {
+    const identity = await postJson("/api/key-from-seed", { seed });
+    const savedProfile = await savedProfileForKey(identity.privateKeyJwk);
+    await buildKitWithKey(identity.privateKeyJwk, savedProfile);
+    renderKit();
+    showToast(savedProfile.mailbox ? t("reusedMailbox") : t("seedLoaded"));
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    setBusy(false);
+  }
+}
+
 function setBusy(isBusy) {
   elements.createButton.disabled = isBusy;
   elements.importKeyButton.disabled = isBusy;
+  elements.importSeedButton.disabled = isBusy;
 }
 
 function urlRows() {
@@ -324,6 +358,7 @@ function showToast(message) {
 
 elements.createButton.addEventListener("click", createKit);
 elements.importKeyButton.addEventListener("click", importSavedDid);
+elements.importSeedButton.addEventListener("click", importSeedDid);
 elements.downloadKeyButton.addEventListener("click", () => {
   if (!state.key || !state.kit) return;
   download(

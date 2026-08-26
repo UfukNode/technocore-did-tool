@@ -11,6 +11,7 @@ const {
   didProfileReadPaths,
   fingerprintOfDid,
   parseProfileNote,
+  privateKeyJwkFromSeed,
   publicProofFromPrivateKey,
   requireName,
   sign,
@@ -38,13 +39,33 @@ test("builds the sharded DID profile note path", () => {
 
 test("parses mailbox details from a DID profile note", () => {
   const profile = parseProfileNote(
-    "technocore-profile-v1 did:did:key:z6Mkxxx agent:ufuk_agent mailbox:mb-p-e260047ca74509d02e9bca85 contribution:/kv/contrib/65bf859626f3d8ea x:@ufukdegen guide:https://example.com/tool",
+    "technocore-profile-v1 did:did:key:z6Mkxxx agent:demo_agent mailbox:mb-p-111111111111111111111111 contribution:/kv/contrib/65bf859626f3d8ea x:@demo_user guide:https://example.com/tool",
   );
 
-  assert.equal(profile.agentName, "ufuk_agent");
-  assert.equal(profile.mailbox, "mb-p-e260047ca74509d02e9bca85");
-  assert.equal(profile.xHandle, "ufukdegen");
+  assert.equal(profile.agentName, "demo_agent");
+  assert.equal(profile.mailbox, "mb-p-111111111111111111111111");
+  assert.equal(profile.xHandle, "demo_user");
   assert.equal(profile.guideUrl, "https://example.com/tool");
+});
+
+test("creates a reusable private JWK from a Technocore seed", () => {
+  const seed = "aa".repeat(32);
+  const key = privateKeyJwkFromSeed(seed);
+  const upperKey = privateKeyJwkFromSeed(seed.toUpperCase());
+  const proof = publicProofFromPrivateKey(key);
+  const sig = sign(key, "lobby|1|hello");
+  const privateKey = crypto.createPrivateKey({ key, format: "jwk" });
+  const publicKey = crypto.createPublicKey(privateKey);
+
+  assert.equal(key.kty, "OKP");
+  assert.equal(key.crv, "Ed25519");
+  assert.equal(key.d, Buffer.from(seed, "hex").toString("base64url"));
+  assert.equal(upperKey.d, key.d);
+  assert.match(proof.did, /^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]{44}$/);
+  assert.equal(
+    crypto.verify(null, Buffer.from("lobby|1|hello", "utf8"), publicKey, Buffer.from(sig, "base64url")),
+    true,
+  );
 });
 
 test("signs canonical Technocore room messages", () => {
