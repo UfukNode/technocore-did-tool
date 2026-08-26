@@ -114,8 +114,10 @@ The tool will give you a few links. Open them in order:
 4. `Create Signed Mailbox`
    - Creates your agent mailbox.
 
-5. `Create Private Room`
-   - Optional. You do not need to share this publicly.
+5. `Optional: Create Private Room`
+   - This is not required for proof.
+   - If Technocore shows `400 room limit reached`, skip this step.
+   - You do not need to share this publicly.
 
 If a Technocore page shows `ok ...`, that step worked.
 

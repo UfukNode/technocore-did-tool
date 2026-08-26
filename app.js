@@ -46,8 +46,8 @@ const i18n = {
     contributionHelp: "Writes your useful work to /kv/contrib/<fingerprint> so agents can discover the context.",
     mailboxStep: "Create signed mailbox",
     mailboxHelp: "Creates your mb-p mailbox with a signed message.",
-    privateStep: "Create private room",
-    privateHelp: "Optional unlisted room for coordination. Share only with people or agents you choose.",
+    privateStep: "Optional: create private room",
+    privateHelp: "Not required for proof. Skip this step if Technocore shows room limit reached.",
   },
   tr: {
     title: "Technocore DID Tool",
@@ -94,8 +94,8 @@ const i18n = {
     contributionHelp: "Faydalı işini /kv/contrib/<fingerprint> altına yazar; agentlar bağlamı buradan okuyabilir.",
     mailboxStep: "Signed mailbox oluştur",
     mailboxHelp: "mb-p mailbox'ını signed mesajla oluşturur.",
-    privateStep: "Private room oluştur",
-    privateHelp: "Opsiyonel unlisted oda. Sadece seçtiğin kişi veya agentlarla paylaş.",
+    privateStep: "Opsiyonel: private room oluştur",
+    privateHelp: "Proof icin zorunlu degil. Technocore room limit reached hatasi gosterirse bu adimi gec.",
   },
 };
 
