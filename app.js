@@ -12,6 +12,8 @@ const i18n = {
     guideUrl: "Contribution URL",
     contributionSummary: "Contribution summary",
     baseUrl: "Technocore URL",
+    includeMailbox: "Create a new mailbox if no saved mailbox exists",
+    includePrivateRoom: "Add optional private room step",
     createDid: "Create DID and proof kit",
     downloadKey: "Download private key",
     existingKey: "Optional: existing private key JSON",
@@ -22,6 +24,7 @@ const i18n = {
     identityText: "Your DID and public profile note.",
     fingerprint: "Fingerprint",
     mailbox: "Mailbox",
+    skipped: "Skipped",
     publishTitle: "Publish steps",
     publishText: "Follow these in order: create DID, join Technocore, register contribution, then share it.",
     emptyUrls: "Create a DID first.",
@@ -64,6 +67,8 @@ const i18n = {
     guideUrl: "Katkı linki",
     contributionSummary: "Katkı özeti",
     baseUrl: "Technocore URL",
+    includeMailbox: "Kayitli mailbox yoksa yeni mailbox olustur",
+    includePrivateRoom: "Opsiyonel private room adimini ekle",
     createDid: "DID ve proof kit oluştur",
     downloadKey: "Private key indir",
     existingKey: "Opsiyonel: mevcut private key JSON",
@@ -74,6 +79,7 @@ const i18n = {
     identityText: "DID ve public profile note bilgilerin.",
     fingerprint: "Fingerprint",
     mailbox: "Mailbox",
+    skipped: "Atlandi",
     publishTitle: "Yayınlama adımları",
     publishText: "Sırayla ilerle: DID oluştur, Technocore'a katıl, katkını kaydet, sonra paylaş.",
     emptyUrls: "Önce DID oluştur.",
@@ -121,6 +127,8 @@ const elements = {
   importKeyButton: $("#importKeyButton"),
   importSeedButton: $("#importSeedButton"),
   privateKeyFile: $("#privateKeyFile"),
+  includeMailbox: $("#includeMailbox"),
+  includePrivateRoom: $("#includePrivateRoom"),
   downloadKeyButton: $("#downloadKeyButton"),
   copyShareButton: $("#copyShareButton"),
   copyExportButton: $("#copyExportButton"),
@@ -201,6 +209,8 @@ async function buildKitWithKey(privateKeyJwk, savedProfile = {}) {
     contributionSummary: inputValue("contributionSummary"),
     baseUrl: inputValue("baseUrl"),
     mailbox: savedProfile.mailbox || "",
+    includeMailbox: Boolean(savedProfile.mailbox) || elements.includeMailbox.checked,
+    includePrivateRoom: elements.includePrivateRoom.checked,
   });
 }
 
@@ -280,9 +290,13 @@ function urlRows() {
     ["lobbyStep", "lobbyHelp", state.kit.lobbyProof.url],
     ["profileStep", "profileHelp", state.kit.profileNote.url],
     ["contributionStep", "contributionHelp", state.kit.contributionNote.url],
-    ["mailboxStep", "mailboxHelp", state.kit.mailboxProof.url],
-    ["privateStep", "privateHelp", state.kit.privateRoomProof.url],
   ];
+  if (state.kit.mailboxProof) {
+    rows.push(["mailboxStep", "mailboxHelp", state.kit.mailboxProof.url]);
+  }
+  if (state.kit.privateRoomProof) {
+    rows.push(["privateStep", "privateHelp", state.kit.privateRoomProof.url]);
+  }
 
   return rows.map(([title, help, url]) => `
     <article class="url-row">
@@ -301,7 +315,7 @@ function renderKit() {
   const kit = state.kit;
   elements.didOut.textContent = kit ? kit.did : "-";
   elements.fingerprintOut.textContent = kit ? kit.fingerprint : "-";
-  elements.mailboxOut.textContent = kit ? `/r/${kit.mailbox}` : "-";
+  elements.mailboxOut.textContent = kit ? (kit.mailbox ? `/r/${kit.mailbox}` : t("skipped")) : "-";
   elements.urlList.classList.toggle("empty", !kit);
   elements.urlList.innerHTML = urlRows();
 

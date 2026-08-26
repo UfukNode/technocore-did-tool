@@ -169,6 +169,24 @@ textarea:focus {
   margin-top: 12px;
 }
 
+.checks {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.check-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
 .actions,
 .lang,
 .tabs {

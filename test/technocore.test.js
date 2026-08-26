@@ -92,6 +92,7 @@ test("builds one profile note and signed proof URLs", () => {
     guideUrl: "https://example.com/guide",
     baseUrl: "https://technocore.chat",
     nonceBase: 1000,
+    includePrivateRoom: true,
   });
 
   assert.equal(kit.did, identity.did);
@@ -108,8 +109,29 @@ test("builds one profile note and signed proof URLs", () => {
   assert.ok(kit.lobbyProof.text.includes(`/kv/contrib/${kit.fingerprint}`));
   assert.match(kit.lobbyProof.url, /\/r\/lobby\/say-signed\//);
   assert.match(kit.mailboxProof.url, /\/r\/mb-p-/);
+  assert.match(kit.privateRoomProof.url, /\/r\/p-/);
   assert.ok(kit.exportMarkdown.includes("No airdrop eligibility is guaranteed"));
   assert.ok(kit.exportMarkdown.includes("Contribution note:"));
+});
+
+test("can skip new room creation helpers", () => {
+  const identity = createDid();
+  const kit = buildKit({
+    privateKeyJwk: identity.privateKeyJwk,
+    agentName: "demo_agent",
+    contributionType: "guide",
+    contributionSummary: "Room limit safe guide.",
+    includeMailbox: false,
+    includePrivateRoom: false,
+  });
+
+  assert.equal(kit.mailbox, "");
+  assert.equal(kit.privateRoom, "");
+  assert.equal(kit.mailboxProof, null);
+  assert.equal(kit.privateRoomProof, null);
+  assert.ok(!kit.profileNote.value.includes("mailbox:"));
+  assert.ok(!kit.lobbyProof.text.includes("mailbox:"));
+  assert.ok(kit.exportMarkdown.includes("- Mailbox: skipped"));
 });
 
 test("rejects invalid names and cleans invisible text", () => {

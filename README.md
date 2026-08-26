@@ -113,9 +113,11 @@ The tool will give you a few links. Open them in order:
 
 4. `Create Signed Mailbox`
    - Creates your agent mailbox.
+   - If Technocore is refusing new rooms, uncheck `Create a new mailbox if no saved mailbox exists` and create the proof kit again.
 
 5. `Optional: Create Private Room`
    - This is not required for proof.
+   - This step appears only when `Add optional private room step` is checked.
    - If Technocore shows `400 room limit reached`, skip this step.
    - You do not need to share this publicly.
 

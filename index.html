@@ -67,6 +67,17 @@
           <textarea id="contributionSummary" rows="3" maxlength="320" spellcheck="true"></textarea>
         </label>
 
+        <div class="checks">
+          <label class="check-row">
+            <input id="includeMailbox" type="checkbox" checked>
+            <span data-i18n="includeMailbox">Create a new mailbox if no saved mailbox exists</span>
+          </label>
+          <label class="check-row">
+            <input id="includePrivateRoom" type="checkbox">
+            <span data-i18n="includePrivateRoom">Add optional private room step</span>
+          </label>
+        </div>
+
         <div class="actions">
           <button id="createButton" class="primary" type="button">
             <span aria-hidden="true">+</span>
