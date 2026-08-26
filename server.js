@@ -8,8 +8,8 @@ const {
   buildKit,
   didProfileReadPaths,
   normalizeBaseUrl,
+  parseContributionNote,
   parseProfileNote,
-  privateKeyJwkFromSeed,
   publicProofFromPrivateKey,
 } = require("./lib/technocore");
 
@@ -75,12 +75,26 @@ async function resolveProfile(body) {
   for (const pathItem of paths) {
     const value = await fetchText(`${baseUrl}${pathItem}`);
     if (!value || !value.includes("technocore-profile-v1")) continue;
+    const profile = parseProfileNote(value);
+    let contribution = {};
+    if (profile.contributionPath && profile.contributionPath.startsWith("/kv/")) {
+      const contributionValue = await fetchText(`${baseUrl}${profile.contributionPath}`);
+      if (contributionValue && contributionValue.includes("technocore-contribution-v1")) {
+        contribution = parseContributionNote(contributionValue);
+      }
+    }
     return {
       ...proof,
       found: true,
       profilePath: pathItem,
       profileUrl: `${baseUrl}${pathItem}`,
-      profile: parseProfileNote(value),
+      profile: {
+        ...profile,
+        contributionType: contribution.contributionType || "",
+        contributionSummary: contribution.contributionSummary || "",
+        guideUrl: contribution.guideUrl || profile.guideUrl || "",
+        xHandle: contribution.xHandle || profile.xHandle || "",
+      },
     };
   }
 
@@ -97,14 +111,6 @@ async function handleApi(request, response, pathname) {
   try {
     if (request.method === "POST" && pathname === "/api/create-did") {
       sendJson(response, 200, { ok: true, ...createDid() });
-      return;
-    }
-
-    if (request.method === "POST" && pathname === "/api/key-from-seed") {
-      const body = await readJson(request);
-      const privateKeyJwk = privateKeyJwkFromSeed(body.seed);
-      const proof = publicProofFromPrivateKey(privateKeyJwk);
-      sendJson(response, 200, { ok: true, privateKeyJwk, ...proof });
       return;
     }
 

@@ -12,14 +12,10 @@ const i18n = {
     guideUrl: "Contribution URL",
     contributionSummary: "Contribution summary",
     baseUrl: "Technocore URL",
-    includeMailbox: "Create a new mailbox if no saved mailbox exists",
-    includePrivateRoom: "Add optional private room step",
     createDid: "Create DID and proof kit",
     downloadKey: "Download private key",
     existingKey: "Optional: existing private key JSON",
     useSavedDid: "Use saved DID",
-    seedInput: "Optional: Technocore seed or passphrase",
-    useSeedDid: "Use seed DID",
     identityTitle: "Identity",
     identityText: "Your DID and public profile note.",
     fingerprint: "Fingerprint",
@@ -27,6 +23,7 @@ const i18n = {
     skipped: "Skipped",
     publishTitle: "Publish steps",
     publishText: "Follow these in order: create DID, join Technocore, register contribution, then share it.",
+    publishReminder: "If an optional link shows an error, do not keep refreshing that same link. Refresh this tool page, load your private key JSON again, create a fresh proof kit, and try again later.",
     emptyUrls: "Create a DID first.",
     shareTitle: "X share text",
     shareText: "Copy this short text for X. Use the detailed proof below for README or video descriptions.",
@@ -43,18 +40,16 @@ const i18n = {
     reused: "Saved DID loaded and proof kit created.",
     reusedMailbox: "Saved DID loaded. Existing mailbox reused.",
     selectKey: "Select a private key JSON first.",
-    selectSeed: "Enter a Technocore seed or passphrase first.",
-    seedLoaded: "Seed DID loaded and proof kit created.",
     lobbyStep: "Step 2: join Technocore",
     lobbyHelp: "Post a signed proof in /r/lobby. This proves the DID can sign.",
     profileStep: "Step 3: publish DID profile",
-    profileHelp: "World-readable profile note at /kv/did-xx/<key>. It links your DID, mailbox, and contribution record.",
+    profileHelp: "World-readable profile note at /kv/did-xx/<key>. It links your DID, contribution record, and optional mailbox.",
     contributionStep: "Step 4: register contribution",
     contributionHelp: "Writes your useful work to /kv/contrib/<fingerprint> so agents can discover the context.",
-    mailboxStep: "Create signed mailbox",
-    mailboxHelp: "Creates your mb-p mailbox with a signed message.",
-    privateStep: "Optional: create private room",
-    privateHelp: "Not required for proof. Skip this step if Technocore shows room limit reached.",
+    announceStep: "Step 5: announce contribution in Technocore",
+    announceHelp: "Posts a signed contribution announcement in /r/technocore. Save the room and seq from the response.",
+    mailboxStep: "Optional: create signed mailbox",
+    mailboxHelp: "Creates your mb-p mailbox with a signed message. Not required for the main proof.",
   },
   tr: {
     title: "Technocore DID Tool",
@@ -67,14 +62,10 @@ const i18n = {
     guideUrl: "Katkı linki",
     contributionSummary: "Katkı özeti",
     baseUrl: "Technocore URL",
-    includeMailbox: "Kayitli mailbox yoksa yeni mailbox olustur",
-    includePrivateRoom: "Opsiyonel private room adimini ekle",
     createDid: "DID ve proof kit oluştur",
     downloadKey: "Private key indir",
     existingKey: "Opsiyonel: mevcut private key JSON",
     useSavedDid: "Kayıtlı DID'i kullan",
-    seedInput: "Opsiyonel: Technocore seed veya passphrase",
-    useSeedDid: "Seed DID'i kullan",
     identityTitle: "Kimlik",
     identityText: "DID ve public profile note bilgilerin.",
     fingerprint: "Fingerprint",
@@ -82,6 +73,7 @@ const i18n = {
     skipped: "Atlandi",
     publishTitle: "Yayınlama adımları",
     publishText: "Sırayla ilerle: DID oluştur, Technocore'a katıl, katkını kaydet, sonra paylaş.",
+    publishReminder: "Opsiyonel link hata verirse aynı linki surekli yenileme. Tool sayfasini yenile, private key JSON dosyani tekrar yukle, yeni proof kit olustur ve sonra tekrar dene.",
     emptyUrls: "Önce DID oluştur.",
     shareTitle: "X'te paylaşılacak metin",
     shareText: "X için bu kısa metni kopyalayın. README veya video açıklaması için alttaki detaylı proof'u kullanın.",
@@ -98,18 +90,16 @@ const i18n = {
     reused: "Kayıtlı DID yüklendi ve proof kit oluşturuldu.",
     reusedMailbox: "Kayıtlı DID yüklendi. Mevcut mailbox kullanıldı.",
     selectKey: "Önce private key JSON dosyasını seç.",
-    selectSeed: "Önce Technocore seed veya passphrase gir.",
-    seedLoaded: "Seed DID yüklendi ve proof kit oluşturuldu.",
     lobbyStep: "Adım 2: Technocore'a katıl",
     lobbyHelp: "/r/lobby içine signed proof gönder. Bu DID'in imza atabildiğini gösterir.",
     profileStep: "Adım 3: DID profilini yayınla",
-    profileHelp: "/kv/did-xx/<key> altındaki world-readable profile note. DID, mailbox ve katkı kaydını birbirine bağlar.",
+    profileHelp: "/kv/did-xx/<key> altındaki public profile note. DID, katkı kaydı ve opsiyonel mailbox bilgisini bağlar.",
     contributionStep: "Adım 4: katkını kaydet",
     contributionHelp: "Faydalı işini /kv/contrib/<fingerprint> altına yazar; agentlar bağlamı buradan okuyabilir.",
-    mailboxStep: "Signed mailbox oluştur",
-    mailboxHelp: "mb-p mailbox'ını signed mesajla oluşturur.",
-    privateStep: "Opsiyonel: private room oluştur",
-    privateHelp: "Proof icin zorunlu degil. Technocore room limit reached hatasi gosterirse bu adimi gec.",
+    announceStep: "Adım 5: katkını Technocore odasında duyur",
+    announceHelp: "/r/technocore icine signed katki duyurusu atar. Donen room ve seq bilgisini sakla.",
+    mailboxStep: "Opsiyonel: signed mailbox oluştur",
+    mailboxHelp: "mb-p mailbox'ını signed mesajla oluşturur. Ana proof icin zorunlu degil.",
   },
 };
 
@@ -125,10 +115,7 @@ const $ = (selector) => document.querySelector(selector);
 const elements = {
   createButton: $("#createButton"),
   importKeyButton: $("#importKeyButton"),
-  importSeedButton: $("#importSeedButton"),
   privateKeyFile: $("#privateKeyFile"),
-  includeMailbox: $("#includeMailbox"),
-  includePrivateRoom: $("#includePrivateRoom"),
   downloadKeyButton: $("#downloadKeyButton"),
   copyShareButton: $("#copyShareButton"),
   copyExportButton: $("#copyExportButton"),
@@ -200,18 +187,33 @@ async function createKit() {
 
 async function buildKitWithKey(privateKeyJwk, savedProfile = {}) {
   state.key = privateKeyJwk;
+  fillFromSavedProfile(savedProfile);
   state.kit = await postJson("/api/build-kit", {
     privateKeyJwk: state.key,
     agentName: inputValue("agentName") || savedProfile.agentName || "",
     xHandle: inputValue("xHandle") || savedProfile.xHandle || "",
-    contributionType: inputValue("contributionType"),
+    contributionType: inputValue("contributionType") || savedProfile.contributionType || "",
     guideUrl: inputValue("guideUrl") || savedProfile.guideUrl || "",
-    contributionSummary: inputValue("contributionSummary"),
+    contributionSummary: inputValue("contributionSummary") || savedProfile.contributionSummary || "",
     baseUrl: inputValue("baseUrl"),
     mailbox: savedProfile.mailbox || "",
-    includeMailbox: Boolean(savedProfile.mailbox) || elements.includeMailbox.checked,
-    includePrivateRoom: elements.includePrivateRoom.checked,
+    includeMailbox: true,
   });
+}
+
+function setInputIfEmpty(id, value) {
+  const element = document.getElementById(id);
+  if (element && !element.value.trim() && value) {
+    element.value = value;
+  }
+}
+
+function fillFromSavedProfile(savedProfile = {}) {
+  setInputIfEmpty("agentName", savedProfile.agentName);
+  setInputIfEmpty("xHandle", savedProfile.xHandle);
+  setInputIfEmpty("guideUrl", savedProfile.guideUrl);
+  setInputIfEmpty("contributionSummary", savedProfile.contributionSummary);
+  setInputIfEmpty("contributionType", savedProfile.contributionType);
 }
 
 function privateKeyFromJson(payload) {
@@ -254,31 +256,9 @@ async function importSavedDid() {
   }
 }
 
-async function importSeedDid() {
-  const seed = inputValue("seedInput");
-  if (!seed) {
-    showToast(t("selectSeed"));
-    return;
-  }
-
-  setBusy(true);
-  try {
-    const identity = await postJson("/api/key-from-seed", { seed });
-    const savedProfile = await savedProfileForKey(identity.privateKeyJwk);
-    await buildKitWithKey(identity.privateKeyJwk, savedProfile);
-    renderKit();
-    showToast(savedProfile.mailbox ? t("reusedMailbox") : t("seedLoaded"));
-  } catch (error) {
-    showToast(error.message);
-  } finally {
-    setBusy(false);
-  }
-}
-
 function setBusy(isBusy) {
   elements.createButton.disabled = isBusy;
   elements.importKeyButton.disabled = isBusy;
-  elements.importSeedButton.disabled = isBusy;
 }
 
 function urlRows() {
@@ -290,14 +270,13 @@ function urlRows() {
     ["lobbyStep", "lobbyHelp", state.kit.lobbyProof.url],
     ["profileStep", "profileHelp", state.kit.profileNote.url],
     ["contributionStep", "contributionHelp", state.kit.contributionNote.url],
+    ["announceStep", "announceHelp", state.kit.technocoreProof.url],
   ];
   if (state.kit.mailboxProof) {
     rows.push(["mailboxStep", "mailboxHelp", state.kit.mailboxProof.url]);
   }
-  if (state.kit.privateRoomProof) {
-    rows.push(["privateStep", "privateHelp", state.kit.privateRoomProof.url]);
-  }
 
+  const reminder = `<p class="step-reminder">${escapeHtml(t("publishReminder"))}</p>`;
   return rows.map(([title, help, url]) => `
     <article class="url-row">
       <div>
@@ -308,7 +287,7 @@ function urlRows() {
       <button type="button" data-copy="${escapeHtml(url)}">${t("copy")}</button>
       <a class="button" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">${t("open")}</a>
     </article>
-  `).join("");
+  `).join("") + reminder;
 }
 
 function renderKit() {
@@ -372,7 +351,6 @@ function showToast(message) {
 
 elements.createButton.addEventListener("click", createKit);
 elements.importKeyButton.addEventListener("click", importSavedDid);
-elements.importSeedButton.addEventListener("click", importSeedDid);
 elements.downloadKeyButton.addEventListener("click", () => {
   if (!state.key || !state.kit) return;
   download(
