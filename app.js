@@ -14,7 +14,7 @@ const i18n = {
     baseUrl: "Technocore URL",
     createDid: "Create DID and proof kit",
     downloadKey: "Download private key",
-    existingKey: "Existing private key JSON",
+    existingKey: "Optional: existing private key JSON",
     useSavedDid: "Use saved DID",
     identityTitle: "Identity",
     identityText: "Your DID and public profile note.",
@@ -62,7 +62,7 @@ const i18n = {
     baseUrl: "Technocore URL",
     createDid: "DID ve proof kit oluştur",
     downloadKey: "Private key indir",
-    existingKey: "Mevcut private key JSON",
+    existingKey: "Opsiyonel: mevcut private key JSON",
     useSavedDid: "Kayıtlı DID'i kullan",
     identityTitle: "Kimlik",
     identityText: "DID ve public profile note bilgilerin.",
@@ -147,7 +147,16 @@ async function postJson(path, payload = {}) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  const data = await response.json();
+  const text = await response.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    throw new Error("API response is not JSON. Start the tool with npm start and open the local or Codespace URL.");
+  }
+  if (!data) {
+    throw new Error("API returned an empty response. Start the tool with npm start and open the local or Codespace URL.");
+  }
   if (!response.ok || !data.ok) {
     throw new Error(data.error || "Request failed.");
   }

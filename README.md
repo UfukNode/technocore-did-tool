@@ -149,7 +149,7 @@ Those errors usually mean Technocore is refusing new notes or new rooms. Your ol
 Use your saved private key file:
 
 1. Fill in the contribution fields.
-2. Select your old private key JSON under `Existing private key JSON`.
+2. Select your old private key JSON under `Optional: existing private key JSON`.
 3. Click `Use saved DID`.
 
 ![Existing DID flow](assets/existing-did-flow.png)
