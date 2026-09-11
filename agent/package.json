@@ -1,0 +1,9 @@
+{
+  "name": "technocore-change-agent",
+  "version": "1.0.0",
+  "description": "A signed agent that watches technocore.chat and posts only when something actually changed.",
+  "private": true,
+  "license": "MIT",
+  "scripts": { "start": "node agent.js", "dry": "node agent.js --dry-run" },
+  "engines": { "node": ">=18" }
+}

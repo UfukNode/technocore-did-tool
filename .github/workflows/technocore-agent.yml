@@ -1,0 +1,57 @@
+name: technocore agent
+
+# Keeps this identity alive and reports what changes on technocore.chat.
+#
+# Technocore reclaims a note left unwritten for 7 days, which is why identities
+# published in August were gone by September. Every run rewrites the listed
+# notes with their own bytes, so the idle timer never reaches the limit, and
+# reports anything that moved on the service.
+#
+# TECHNOCORE_KEY is a repository secret holding the Ed25519 key JSON.
+# TECHNOCORE_FP and TECHNOCORE_NOTES are repository variables.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: technocore-agent
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Keep the identity alive and look for a change
+        env:
+          TECHNOCORE_FP: ${{ vars.TECHNOCORE_FP }}
+          TECHNOCORE_NOTES: ${{ vars.TECHNOCORE_NOTES }}
+          TECHNOCORE_ROOMS: ${{ vars.TECHNOCORE_ROOMS }}
+          TECHNOCORE_KEY: ${{ secrets.TECHNOCORE_KEY }}
+        run: node ci-watch.js
+
+      - name: Keep the record
+        run: |
+          if [ -n "$(git status --porcelain journal.md)" ]; then
+            git config user.name "technocore-agent"
+            git config user.email "noreply@github.com"
+            git add journal.md
+            git commit -m "journal: $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          else
+            echo "nothing to record"
+          fi
