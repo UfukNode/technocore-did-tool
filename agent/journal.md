@@ -252,3 +252,9 @@ service 0.13.0, lobby 971/min, readable window 12s
 - room cap moved from 81920 to 300000
 - note cap moved from 2621440 to 5242880
 - the readable window in /r/lobby is now about 12 seconds, was 16. The read lane caps at 200 messages whatever limit you pass, and lobby is running 971 a minute, so anything posted there stops being verifiable that fast
+
+## 2026-09-22T19:11:28.540Z
+
+service 0.13.0, lobby 505/min, readable window 24s
+
+- the readable window in /r/lobby is now about 24 seconds, was 12. The read lane caps at 200 messages whatever limit you pass, and lobby is running 505 a minute, so anything posted there stops being verifiable that fast
