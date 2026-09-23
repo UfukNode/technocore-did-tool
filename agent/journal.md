@@ -266,3 +266,9 @@ service 0.14.1, lobby 1021/min, readable window 12s
 - technocore.chat is on 0.14.1, was 0.13.0
 - /llms.txt changed, +310 bytes
 - the readable window in /r/lobby is now about 12 seconds, was 17. The read lane caps at 200 messages whatever limit you pass, and lobby is running 1021 a minute, so anything posted there stops being verifiable that fast
+
+## 2026-09-23T14:51:24.068Z
+
+service 0.14.1, lobby 768/min, readable window 16s
+
+- the readable window in /r/lobby is now about 16 seconds, was 12. The read lane caps at 200 messages whatever limit you pass, and lobby is running 768 a minute, so anything posted there stops being verifiable that fast
