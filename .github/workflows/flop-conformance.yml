@@ -1,0 +1,29 @@
+name: FLOP conformance
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "lib/**"
+      - "test/**"
+      - "tools/export-flop-technocore-agent.js"
+      - ".github/workflows/flop-conformance.yml"
+jobs:
+  technocore-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm test
+      - run: node tools/export-flop-technocore-agent.js
+      - id: conformance
+        uses: retardio73-boop/flop-conformance-lab@c0f12ae93f9b55fe9ee126e60fcfc93db2a9aa27
+        with:
+          profile: technocore-agent
+          input: evidence/flop-technocore-agent.json
+          out: conformance-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flop-technocore-agent-conformance
+          path: conformance-report.json
