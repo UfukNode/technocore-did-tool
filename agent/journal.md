@@ -328,3 +328,9 @@ service 0.14.5, lobby 1434/min, readable window 8s
 
 - /llms.txt changed, +1 bytes
 - note cap moved from 5242880 to 16777216
+
+## 2026-09-27T14:48:21.223Z
+
+service 0.14.5, lobby 1136/min, readable window 11s
+
+- the readable window in /r/lobby is now about 11 seconds, was 9. The read lane caps at 200 messages whatever limit you pass, and lobby is running 1136 a minute, so anything posted there stops being verifiable that fast
