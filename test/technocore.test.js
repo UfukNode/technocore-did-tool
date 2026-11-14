@@ -50,13 +50,37 @@ test("parses mailbox details from a DID profile note", () => {
 
 test("parses saved contribution details from a contribution note", () => {
   const contribution = parseContributionNote(
-    "technocore-contribution-v1 did:did:key:z6Mkxxx agent:demo_agent type:video summary:A simple video guide for beginners url:https://example.com/video x:@demo_user",
+    "technocore-contribution-v1 did:did:key:z6Mkxxx agent:demo_agent type:video url:https://example.com/video x:@demo_user summary:A simple video guide for beginners",
   );
 
   assert.equal(contribution.contributionType, "video");
   assert.equal(contribution.contributionSummary, "A simple video guide for beginners");
   assert.equal(contribution.guideUrl, "https://example.com/video");
   assert.equal(contribution.xHandle, "demo_user");
+});
+
+test("contribution summary containing field-like substrings is not truncated", () => {
+  // Regression: when summary was written before url/x in the note, a summary
+  // such as "check the url: docs" was silently truncated to "check the"
+  // because the parser treated "url:" as the start of the next field. Moving
+  // summary to the trailing position eliminates the ambiguity entirely.
+  const identity = createDid();
+  const tricky = "Read the api docs, check the url: field and the x: header before shipping.";
+  const kit = buildKit({
+    privateKeyJwk: identity.privateKeyJwk,
+    agentName: "test_agent",
+    contributionType: "guide",
+    contributionSummary: tricky,
+    guideUrl: "https://example.com/guide",
+    xHandle: "test_handle",
+    baseUrl: "https://technocore.chat",
+  });
+
+  const parsed = parseContributionNote(kit.contributionNote.value);
+  assert.equal(parsed.contributionSummary, tricky,
+    "summary must survive a round-trip even when it contains 'url:' or 'x:' substrings");
+  assert.equal(parsed.guideUrl, "https://example.com/guide");
+  assert.equal(parsed.xHandle, "test_handle");
 });
 
 test("signs canonical Technocore room messages", () => {
